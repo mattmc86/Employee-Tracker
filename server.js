@@ -1,7 +1,24 @@
 const inquirer = require('inquirer');
+const express = require('express');
+const mysql = require('mysql2');
+const PORT = process.env.PORT || 3001;
+const app = express();
 // require mysql2
 // require table console, not sure where yet
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 
+const db = mysql.createConnection(
+    {
+      host: 'localhost',
+      // MySQL username,
+      user: 'root',
+      // MySQL password
+      password: 'MattmcSQL',
+      database: 'employees'
+    },
+    console.log(`Connected to the employees database.`)
+  );
 
 //prompts
 const promptUser = () => {
@@ -58,7 +75,7 @@ const promptUser = () => {
 const viewAllDepartments = () =>{
     let sqlQuery = `SELECT department.id, department.department_name
                  FROM department;`
-    connection.promise().query(sqlQuery,(error,response)=>{
+    db.promise().query(sqlQuery,(error,response)=>{
         if (error) throw error;
         console.table(response);
         promptUser();
@@ -70,7 +87,7 @@ const viewAllRoles= () =>{
     let sqlQuery = `SELECT role.title, department.department_name, role.id, role.salary
                  FROM role
                  INNER JOIN department ON role.department_id=department.id;`
-    connection.promise().query(sqlQuery,(error,response)=>{
+    db.promise().query(sqlQuery,(error,response)=>{
         if (error) throw error;
         console.table(response);
         promptUser();
@@ -86,7 +103,7 @@ const viewAllEmployees= () =>{
                  AND role_id = employee.role_id;`
 
                 
-    connection.promise().query(sqlQuery,(error,response)=>{
+    db.promise().query(sqlQuery,(error,response)=>{
         if (error) throw error;
         console.table(response);
         promptUser();
@@ -107,7 +124,7 @@ const addDepartment = () =>{
     ])
     .then((answer)=>{
         let sqlQuery = `INSERT INTO department (department_name) VALUE (newDepartment);`;
-        connection.query(sqlQuery, answer.newDepartment,(error,response) =>{
+        db.query(sqlQuery, answer.newDepartment,(error,response) =>{
             if (error) throw error;
             viewAllDepartments();
         })
@@ -138,7 +155,7 @@ const addRole = () =>{
     ])
     .then((answers) =>{
         let sqlQuery = `INSERT INTO role VALUES (newRole, newSalary, currentDepartments);`;
-        connection.query(sqlQuery, answer.newDepartment,(error,response) =>{
+        db.query(sqlQuery, answer.newDepartment,(error,response) =>{
             if (error) throw error;
             viewAllDepartments();
         })
@@ -175,6 +192,32 @@ const addEmployee = () =>{
         //name: "manager",
         //message: "What is the employees manager?",
         //choices: managers //variable created from managers array
+
+    ])
+}
+
+const updateEmployee = () => {
+    //need array of employees
+    //SELECT employee.first_name, employee.last_name FROM employee;
+    //need array of roles
+    //SELECT employee.first_name, employee.last_name FROM employee;
+    inquirer.prompt([
+        {
+            type: "list",
+            name: "chooseEmployee",
+            message: "Please select an Employee",
+            choices: "employeeListArray"
+        }
+
+        //select new role
+
+        .then((answers) =>{
+            let sqlQuery = '';
+            db.query(sqlQuery, answers.chooseEmployee,(error,response) =>{
+                if (error) throw error;
+                viewAllDepartments();
+            })
+        })
 
     ])
 }
