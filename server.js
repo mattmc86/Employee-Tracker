@@ -3,10 +3,10 @@ const express = require('express');
 const mysql = require('mysql2');
 const PORT = process.env.PORT || 3001;
 const app = express();
-// require mysql2
-// require table console, not sure where yet
+
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+//maybe require console.table
 
 const db = mysql.createConnection(
     {
@@ -19,6 +19,11 @@ const db = mysql.createConnection(
     },
     console.log(`Connected to the employees database.`)
   );
+
+    db.connect((error) =>{
+        if (error) throw error;
+        promptUser();
+    })
 
 //prompts
 const promptUser = () => {
@@ -75,7 +80,8 @@ const promptUser = () => {
 const viewAllDepartments = () =>{
     let sqlQuery = `SELECT department.id, department.department_name
                  FROM department;`
-    db.promise().query(sqlQuery,(error,response)=>{
+    db.query(sqlQuery,(error,response)=>{
+    //db.promise().query(sqlQuery,(error,response)=>{
         if (error) throw error;
         console.table(response);
         promptUser();
@@ -87,7 +93,8 @@ const viewAllRoles= () =>{
     let sqlQuery = `SELECT role.title, department.department_name, role.id, role.salary
                  FROM role
                  INNER JOIN department ON role.department_id=department.id;`
-    db.promise().query(sqlQuery,(error,response)=>{
+    db.query(sqlQuery,(error,response)=>{
+    //db.promise().query(sqlQuery,(error,response)=>{
         if (error) throw error;
         console.table(response);
         promptUser();
@@ -101,9 +108,8 @@ const viewAllEmployees= () =>{
                  FROM employee, department, role
                  WHERE department.id = role.department_id
                  AND role_id = employee.role_id;`
-
-                
-    db.promise().query(sqlQuery,(error,response)=>{
+    db.query(sqlQuery,(error,response)=>{        
+    //db.promise().query(sqlQuery,(error,response)=>{
         if (error) throw error;
         console.table(response);
         promptUser();
@@ -123,7 +129,7 @@ const addDepartment = () =>{
         }
     ])
     .then((answer)=>{
-        let sqlQuery = `INSERT INTO department (department_name) VALUE (newDepartment);`;
+        let sqlQuery = `INSERT INTO department (department_name) VALUE ("${answer.newDepartment}");`;
         db.query(sqlQuery, answer.newDepartment,(error,response) =>{
             if (error) throw error;
             viewAllDepartments();
@@ -138,7 +144,12 @@ const addRole = () =>{
             type:"list",
             name: "currentDepartments",
             message: "Which department will the role be part of?",
-            choices: 'allDepartsVariable'
+            //choices: 'allDepartsVariable'
+            choices: [
+                "Legal",
+                "Engineering",
+                "Sales"
+            ]
         },
         {
             type: "input",
@@ -154,8 +165,8 @@ const addRole = () =>{
         }
     ])
     .then((answers) =>{
-        let sqlQuery = `INSERT INTO role VALUES (newRole, newSalary, currentDepartments);`;
-        db.query(sqlQuery, answer.newDepartment,(error,response) =>{
+        let sqlQuery = `INSERT INTO role VALUES ("${newRole}", "${newSalary}"," ${currentDepartments}");`;
+        db.query(sqlQuery, answers.newDepartment,(error,response) =>{
             if (error) throw error;
             viewAllDepartments();
         })
