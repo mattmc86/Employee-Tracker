@@ -1,7 +1,23 @@
+//install npm i dotenv
+//require('dotenv').config()
+
+//create env File
+// add passwords username to file as variables
+//e.g. PASSWORD = MattmcSQL
+//console.log(process.env.PASSWORD)
+//host: 'localhost',
+      // MySQL username,
+   //   user: 'root',
+      // MySQL password
+   ///   password: process.env.PASSWORD,
+   //   database: 'employees'
+
+
 const inquirer = require('inquirer');
-const express = require('express');
+const express = require('express'); // dont think this is needed
 const mysql = require('mysql2');
-const PORT = process.env.PORT || 3001;
+const { response } = require('express');
+const PORT = process.env.PORT || 3001; // not needed
 const app = express();
 
 app.use(express.urlencoded({ extended: false }));
@@ -90,9 +106,9 @@ const viewAllDepartments = () =>{
 }
 
 const viewAllRoles= () =>{
-    let sqlQuery = `SELECT role.title, department.department_name, role.id, role.salary
-                 FROM role
-                 INNER JOIN department ON role.department_id=department.id;`
+    let sqlQuery = `select role.id, role.title, role.salary, department.department_name
+    from role, department
+    where role.department_id = department.id;`
     db.query(sqlQuery,(error,response)=>{
     //db.promise().query(sqlQuery,(error,response)=>{
         if (error) throw error;
@@ -103,11 +119,11 @@ const viewAllRoles= () =>{
 }
 
 const viewAllEmployees= () =>{
-    //below query needs to be changed, returns too many results
-    let sqlQuery = `SELECT employee.id, employee.first_name, employee.last_name, employee.role_id ,employee.manager_id, role.salary, department.id
-                 FROM employee, department, role
-                 WHERE department.id = role.department_id
-                 AND role_id = employee.role_id;`
+    let sqlQuery = `select employee.id, employee.first_name, employee.last_name, role.title, role.salary, department.department_name,
+    employee.manager_id
+    from employee, role, department
+    where role.department_id = department.id
+    and employee.role_id = role.id;`
     db.query(sqlQuery,(error,response)=>{        
     //db.promise().query(sqlQuery,(error,response)=>{
         if (error) throw error;
@@ -138,18 +154,28 @@ const addDepartment = () =>{
 }
 
 const addRole = () =>{
-    // variable for all departments
+    // TODO add variable for all departments
+    const departmentSQL = `SELECT * FROM department;`
+    db.query(departmentSQL,(error,response)=>{
+        if (error) throw error;
+        let departmentList = [];
+        response.forEach((department)=>{
+            departmentList.push(department.department_name)
+            console.log(departmentList)
+        });
+    })
+    
     inquirer.prompt([
         {
             type:"list",
             name: "currentDepartments",
             message: "Which department will the role be part of?",
-            //choices: 'allDepartsVariable'
-            choices: [
-                "Legal",
-                "Engineering",
-                "Sales"
-            ]
+            choices: departmentList
+            // choices: [
+            //     "5",
+            //     "1",
+            //     "2"
+            // ]
         },
         {
             type: "input",
@@ -165,7 +191,7 @@ const addRole = () =>{
         }
     ])
     .then((answers) =>{
-        let sqlQuery = `INSERT INTO role VALUES ("${newRole}", "${newSalary}"," ${currentDepartments}");`;
+        let sqlQuery = `INSERT INTO role (title,salary, department_id) VALUES ("${answers.newRole}", ${answers.newSalary}, ${answers.currentDepartments});`;
         db.query(sqlQuery, answers.newDepartment,(error,response) =>{
             if (error) throw error;
             viewAllDepartments();
