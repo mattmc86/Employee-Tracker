@@ -126,7 +126,7 @@ const viewAllRoles= () =>{
 
 const viewAllEmployees= () =>{
     let sqlQuery = `select employee.id, employee.first_name, employee.last_name, role.title, role.salary, department.department_name,
-    employee.manager_id
+    employee.manager
     from employee, role, department
     where role.department_id = department.id
     and employee.role_id = role.id;`
@@ -230,6 +230,11 @@ const addEmployee =()=>{
             } ,
             message: "What role will the employee have?",         
             },
+            {
+            type: 'input',
+            name: 'manager',
+            message: 'please enter the managers name?'
+            }
         ])
         .then((answers) =>{
             console.log(answers.role_id)
@@ -243,58 +248,6 @@ const addEmployee =()=>{
     })
 }
 
-// const addEmployee = () =>{
-
-//     const roleSQL = `SELECT * FROM role;`
-//     db.query(roleSQL,(error,response)=>{
-//         if (error) throw error;
-
-//     inquirer.prompt([
-//         {
-//             type: 'input',
-//             name: 'firstName',
-//             message: 'Please enter employees first name'
-//             // look at validation if left blank
-//         },
-//         {
-//             type: 'input',
-//             name: 'lastName',
-//             message: 'Please enter employees last name'
-//             //look at validation if left blank
-//         },
-
-//         {
-//         type:"list",
-//         name: "role",
-//         choices() {
-//             return response.map(({ id, title }) => {
-//             return { name: title, value: id } 
-            
-//              });
-//          } ,
-//          message: "What is the employees role?",         
-//          },
-        
-//          //need array of managers and save in const 
-//         //SELECT employee.first_name, employee.last_name FROM employees;
-//         //{
-//         //type:"list",
-//         //name: "manager",
-//         //message: "What is the employees manager?",
-//         //choices: managers //variable created from managers array
-         
-//         .then((answers) =>{
-//             //let sqlQuery = `INSERT INTO role (title,salary, department_id) VALUES ("${answers.newRole}", ${answers.newSalary}, ${answers.currentDepartments});`;
-//             let sqlQuery = `INSERT INTO employee (first_name,last_name, role_id,manager_id) VALUES ("${answers.firstName}", ${answers.lastName}, ${answers.id},${answers.manager_id});`;
-//             db.query(sqlQuery,(error,response) =>{
-//                 if (error) throw error;
-//                 viewAllEmployees();
-//             })
-//         })
-//     ])
-
-//     })  
-// }
 
 const updateEmployee = () => {
     //need array of employees
