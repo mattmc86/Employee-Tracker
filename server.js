@@ -14,17 +14,8 @@
 
 
 const inquirer = require('inquirer');
-// const express = require('express'); // dont think this is needed
 const mysql = require('mysql2');
-//const mysqlPromise = require('mysql2/Promise');
-//const { response } = require('express');
-// const PORT = process.env.PORT || 3001; // not needed
-// const app = express();
-
-// app.use(express.urlencoded({ extended: false }));
-// app.use(express.json());
 //maybe require console.table
-
 const db = mysql.createConnection(
     {
       host: 'localhost',
@@ -170,7 +161,6 @@ const addDepartment = () =>{
 
 const addRole =()=>{
     db.query("SELECT * FROM department;",(error, response) => {
-       // setInterval(10);
         if (error) throw error;
         inquirer
         .prompt([
@@ -191,8 +181,8 @@ const addRole =()=>{
             name: "department_id",
             
             choices() {
-               return response.map(({ department_id, department_name }) => {
-                    return { name: department_name, value: department_id } 
+               return response.map(({ id, department_name }) => {
+                    return { name: department_name, value: id } 
                
                 });
             } ,
@@ -211,105 +201,100 @@ const addRole =()=>{
     })
 }
 
-// const addRole = () =>{
-
-//    const departmentSQL = `SELECT * FROM department;`
-//     db.query(departmentSQL,(error,response)=>{
-      
-//         let departmentList = [];
-//         response.forEach((department)=>{
-//             departmentList.push(department.department_name);
-           
-//         })
-
-    
-//     inquirer.prompt([
-//         {
-//             type:"list",
-//             name: "currentDepartments",
-//             message: "Which department will the role be part of?",
-//             choices: departmentList
-            
-//         },
-//         {
-//             type: "input",
-//             name: "newRole",
-//             message: "What is the name of the new role?"
-//             //validate if left blank
-//         },
-//         {
-//             type: "input",
-//             name: "newSalary",
-//             message: "What is the salary for the new role?"
-//             //validate if left blank
-//         }
-//     ])
-
-//     .then((answers) =>{
-//     if (error) throw error;
-      
-       
-//        // let sqlQuery = `INSERT INTO role (title,salary, department_id) VALUES ("${answers.newRole}", ${answers.newSalary}, ${answers.currentDepartments});`;
-//         let sqlQuery = `INSERT INTO role (title,salary, department_id) VALUES ("${answers.newRole}", ${answers.newSalary}, ${id});`;
-//         db.query(sqlQuery,(error,response) =>{
-//             if (error) throw error;
-//             viewAllRoles();
-//         })
-//     })
-//         })
-// }
-
-const addEmployee = () =>{
-
-    const roleSQL = `SELECT * FROM role;`
-    db.query(roleSQL,(error,response)=>{
+const addEmployee =()=>{
+    db.query("SELECT * FROM role;",(error, response) => {
         if (error) throw error;
-        let roleList = [];
-        response.forEach((role)=>{
-            roleList.push(role.title);
-           
-        });
-
-    inquirer.prompt([
-        {
+        inquirer
+        .prompt([
+            {
             type: 'input',
-            name: 'firstName',
+            name: 'first_name',
             message: 'Please enter employees first name'
-            // look at validation if left blank
-        },
-        {
+            //validate if left blank 
+            },
+            {
             type: 'input',
-            name: 'lastName',
-            message: 'Please enter employees last name'
-            //look at validation if left blank
-        },
-
-        {
-        type:"list",
-        name: "role",
-        message: "What is the employees role?",
-        choices: roleList
-        }
-         //need array of managers and save in const 
-        //SELECT employee.first_name, employee.last_name FROM employees;
-        //{
-        //type:"list",
-        //name: "manager",
-        //message: "What is the employees manager?",
-        //choices: managers //variable created from managers array
-         
+            name: 'last_name',
+            message: 'Please enter employees last name'                    
+            //validate if left blank
+            },
+            {
+            type:"list",
+            name: "role_id",
+            
+            choices() {
+               return response.map(({ id, title }) => {
+                    return { name: title, value: id } 
+               
+                });
+            } ,
+            message: "What role will the employee have?",         
+            },
+        ])
         .then((answers) =>{
-            //let sqlQuery = `INSERT INTO role (title,salary, department_id) VALUES ("${answers.newRole}", ${answers.newSalary}, ${answers.currentDepartments});`;
-            let sqlQuery = `INSERT INTO employee (first_name,last_name, role_id,manager_id) VALUES ("${answers.firstName}", ${answers.lastName}, ${roleID},${answers.manager_id});`;
-            db.query(sqlQuery,(error,response) =>{
+            console.log(answers.role_id)
+            db.query("INSERT INTO employee SET ?",
+            answers,(error, response)=>{
                 if (error) throw error;
+                console.log(`${answers.title}`)
                 viewAllEmployees();
             })
         })
-    ])
-
-    })  
+    })
 }
+
+// const addEmployee = () =>{
+
+//     const roleSQL = `SELECT * FROM role;`
+//     db.query(roleSQL,(error,response)=>{
+//         if (error) throw error;
+
+//     inquirer.prompt([
+//         {
+//             type: 'input',
+//             name: 'firstName',
+//             message: 'Please enter employees first name'
+//             // look at validation if left blank
+//         },
+//         {
+//             type: 'input',
+//             name: 'lastName',
+//             message: 'Please enter employees last name'
+//             //look at validation if left blank
+//         },
+
+//         {
+//         type:"list",
+//         name: "role",
+//         choices() {
+//             return response.map(({ id, title }) => {
+//             return { name: title, value: id } 
+            
+//              });
+//          } ,
+//          message: "What is the employees role?",         
+//          },
+        
+//          //need array of managers and save in const 
+//         //SELECT employee.first_name, employee.last_name FROM employees;
+//         //{
+//         //type:"list",
+//         //name: "manager",
+//         //message: "What is the employees manager?",
+//         //choices: managers //variable created from managers array
+         
+//         .then((answers) =>{
+//             //let sqlQuery = `INSERT INTO role (title,salary, department_id) VALUES ("${answers.newRole}", ${answers.newSalary}, ${answers.currentDepartments});`;
+//             let sqlQuery = `INSERT INTO employee (first_name,last_name, role_id,manager_id) VALUES ("${answers.firstName}", ${answers.lastName}, ${answers.id},${answers.manager_id});`;
+//             db.query(sqlQuery,(error,response) =>{
+//                 if (error) throw error;
+//                 viewAllEmployees();
+//             })
+//         })
+//     ])
+
+//     })  
+// }
 
 const updateEmployee = () => {
     //need array of employees
