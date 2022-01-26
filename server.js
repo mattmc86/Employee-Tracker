@@ -153,51 +153,93 @@ const addDepartment = () =>{
     })
 }
 
-const addRole = () =>{
-
-    const departmentSQL = `SELECT * FROM department;`
-    db.query(departmentSQL,(error,response)=>{
+const addRole =()=>{
+    db.query("SELECT * FROM department;",(error, response)=>{
         if (error) throw error;
-        let departmentList = [];
-        response.forEach((department)=>{
-            departmentList.push(department.department_name);
-           
-        });
-    
-    
-    inquirer.prompt([
-        {
-            type:"list",
-            name: "currentDepartments",
-            message: "Which department will the role be part of?",
-            choices: departmentList
-            
-        },
-        {
+        inquirer
+        .prompt([
+            {
             type: "input",
-            name: "newRole",
+            name: "title",
             message: "What is the name of the new role?"
-            //validate if left blank
-        },
-        {
+            //validate if left blank 
+            },
+            {
             type: "input",
-            name: "newSalary",
+            name: "salary",
             message: "What is the salary for the new role?"
             //validate if left blank
-        }
-    ])
-    
-    .then((answers) =>{
-       // let sqlQuery = `INSERT INTO role (title,salary, department_id) VALUES ("${answers.newRole}", ${answers.newSalary}, ${answers.currentDepartments});`;
-        let sqlQuery = `INSERT INTO role (title,salary, department_id) VALUES ("${answers.newRole}", ${answers.newSalary}, ${department.department_id});`;
-        db.query(sqlQuery,(error,response) =>{
-            if (error) throw error;
-            viewAllRoles();
+            },
+            {
+            type:"list",
+            name: "department_id",
+            
+            choices () {
+                return response.map(({ department_id, department }) => {
+                    return { name: department, value: department_id } 
+                });
+            } ,
+            message: "Which department will the role be part of?",         
+            },
+        ])
+        .then((answers) =>{
+            const sqlQuery = db.query("INSERT INTO role SET ?",
+            answers,(error, response)=>{
+                if (error) throw error;
+                console.log(`${answers.title} added`)
+                viewAllRoles();
+            })
         })
     })
-})
-
 }
+
+// const addRole = () =>{
+
+//    const departmentSQL = `SELECT * FROM department;`
+//     db.query(departmentSQL,(error,response)=>{
+      
+//         let departmentList = [];
+//         response.forEach((department)=>{
+//             departmentList.push(department.department_name);
+           
+//         })
+
+    
+//     inquirer.prompt([
+//         {
+//             type:"list",
+//             name: "currentDepartments",
+//             message: "Which department will the role be part of?",
+//             choices: departmentList
+            
+//         },
+//         {
+//             type: "input",
+//             name: "newRole",
+//             message: "What is the name of the new role?"
+//             //validate if left blank
+//         },
+//         {
+//             type: "input",
+//             name: "newSalary",
+//             message: "What is the salary for the new role?"
+//             //validate if left blank
+//         }
+//     ])
+
+//     .then((answers) =>{
+//     if (error) throw error;
+      
+       
+//        // let sqlQuery = `INSERT INTO role (title,salary, department_id) VALUES ("${answers.newRole}", ${answers.newSalary}, ${answers.currentDepartments});`;
+//         let sqlQuery = `INSERT INTO role (title,salary, department_id) VALUES ("${answers.newRole}", ${answers.newSalary}, ${id});`;
+//         db.query(sqlQuery,(error,response) =>{
+//             if (error) throw error;
+//             viewAllRoles();
+//         })
+//     })
+//         })
+// }
 
 const addEmployee = () =>{
 
