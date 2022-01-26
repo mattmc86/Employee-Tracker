@@ -14,19 +14,21 @@
 
 
 const inquirer = require('inquirer');
-const express = require('express'); // dont think this is needed
+// const express = require('express'); // dont think this is needed
 const mysql = require('mysql2');
-const { response } = require('express');
-const PORT = process.env.PORT || 3001; // not needed
-const app = express();
+//const mysqlPromise = require('mysql2/Promise');
+//const { response } = require('express');
+// const PORT = process.env.PORT || 3001; // not needed
+// const app = express();
 
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
+// app.use(express.urlencoded({ extended: false }));
+// app.use(express.json());
 //maybe require console.table
 
 const db = mysql.createConnection(
     {
       host: 'localhost',
+      port: 3306,
       // MySQL username,
       user: 'root',
       // MySQL password
@@ -38,7 +40,7 @@ const db = mysql.createConnection(
 
     db.connect((error) =>{
         if (error) throw error;
-        promptUser();
+        console.log(`connected as id ${db.threadId}`);
     })
 
 //prompts
@@ -63,6 +65,19 @@ const promptUser = () => {
     .then((answers) =>{
         const {choices} = answers;
         //if statements for each choice which will call a function
+
+
+        // switch(answers.choices) {
+
+        //     case "viwe all departments":
+
+
+        //     case "exit":
+        //         db.end();
+        //         break;
+        // }
+
+
         if (choices === 'View All Departments'){
             viewAllDepartments();
         }
@@ -154,7 +169,8 @@ const addDepartment = () =>{
 }
 
 const addRole =()=>{
-    db.query("SELECT * FROM department;",(error, response)=>{
+    db.query("SELECT * FROM department;",(error, response) => {
+       // setInterval(10);
         if (error) throw error;
         inquirer
         .prompt([
@@ -174,19 +190,21 @@ const addRole =()=>{
             type:"list",
             name: "department_id",
             
-            choices () {
-                return response.map(({ department_id, department }) => {
-                    return { name: department, value: department_id } 
+            choices() {
+               return response.map(({ department_id, department_name }) => {
+                    return { name: department_name, value: department_id } 
+               
                 });
             } ,
             message: "Which department will the role be part of?",         
             },
         ])
         .then((answers) =>{
-            const sqlQuery = db.query("INSERT INTO role SET ?",
+            console.log(answers.department_id)
+            db.query("INSERT INTO role SET ?",
             answers,(error, response)=>{
                 if (error) throw error;
-                console.log(`${answers.title} added`)
+                console.log(`${answers.title}`)
                 viewAllRoles();
             })
         })
@@ -318,3 +336,7 @@ const updateEmployee = () => {
 
     ])
 }
+
+
+(async () => {await promptUser()})()
+

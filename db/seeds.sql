@@ -1,5 +1,5 @@
 -- File to pre-populate database
-
+USE employees
 
 INSERT INTO department(department_name)
 VALUES ("Engineering"),("Sales"),("Customer Services"),("Finance");
