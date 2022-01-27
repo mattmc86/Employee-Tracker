@@ -12,10 +12,10 @@
    ///   password: process.env.PASSWORD,
    //   database: 'employees'
 
-
+require('dotenv').config()
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
-//maybe require console.table
+//const consoleTable = require('console.table');
 const db = mysql.createConnection(
     {
       host: 'localhost',
@@ -48,7 +48,7 @@ const promptUser = () => {
                 'Add a Department',
                 'Add a Role',
                 'Add an Employee',
-                'Update an Employee',
+                'Update an Employee Role',
                 'Exit'
             ]
         }
@@ -87,12 +87,12 @@ const promptUser = () => {
         if (choices === 'Add an Employee'){
             addEmployee();
         }
-        if (choices === 'Update an Employee'){
+        if (choices === 'Update an Employee Role'){
             updateEmployee();
         }
-        // if (choices === 'Exit'){
-        //     //close app TODO
-        // }
+        if (choices === 'Exit'){
+            db.end();
+        }
 
     })
 }
@@ -136,7 +136,6 @@ const viewAllEmployees= () =>{
         console.table(response);
         promptUser();
     });
-    
 };
 
 //Add functions
@@ -248,33 +247,52 @@ const addEmployee =()=>{
     })
 }
 
-
 const updateEmployee = () => {
-    //need array of employees
-    //SELECT employee.first_name, employee.last_name FROM employee;
-    //need array of roles
-    //SELECT employee.first_name, employee.last_name FROM employee;
-    inquirer.prompt([
-        {
-            type: "list",
-            name: "chooseEmployee",
-            message: "Please select an Employee",
-            choices: "employeeListArray"
-        }
-
-        //select new role
-
+    db.query("SELECT employee.first_name, employee.last_name, employee.id, role.title, role.id FROM employee LEFT JOIN role ON employee.id=role.id;",
+    (error, response) => {
+        if (error) throw error;
+        inquirer
+        .prompt([
+            {
+            type:"list",
+            name: "employee",       
+            choices() {
+               return response.map(({ first_name, last_name, id}) => {
+                    return { name: first_name + " " + last_name, value: id } 
+               
+                });
+            } ,
+            message: "What role will the employee have?",         
+            },
+            {
+            type: 'list',
+            name: 'role',
+            choices() {
+                return response.map(({id, title})=>{
+                    return { name: title, value: id }
+                })
+            },
+            message: 'please select the new role for this Employee?'
+            }
+        ])
         .then((answers) =>{
-            let sqlQuery = '';
-            db.query(sqlQuery, answers.chooseEmployee,(error,response) =>{
+            //console.log(answers.role_id)
+            db.query("UPDATE employee SET ? WHERE ?",
+            [
+                {
+                    role_id: answers.role,
+                },
+                {
+                    id: answers.employee,
+                },
+            ],
+            function (error, response){
                 if (error) throw error;
-                viewAllDepartments();
-            })
+                console.log(`${answers.employee} has been updated`);
+                viewAllEmployees();
+            })         
         })
-
-    ])
+    })
 }
-
-
 (async () => {await promptUser()})()
 
